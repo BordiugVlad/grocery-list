@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { FaShoppingCart, FaList, FaDollarSign } from "react-icons/fa";
 import "./App.css";
@@ -13,7 +13,7 @@ const categories = {
 const GrocerySelection = ({ addItem }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   return (
-    <div className="screen">
+    <div className="screen full-screen">
       <h2>Select Groceries</h2>
       <div className="categories">
         {Object.keys(categories).map((category) => (
@@ -36,7 +36,7 @@ const GrocerySelection = ({ addItem }) => {
 };
 
 const Cart = ({ cart, moveToBought }) => (
-  <div className="screen">
+  <div className="screen full-screen">
     <h2>Shopping Cart</h2>
     <div className="cart-items">
       {cart.map((item, index) => (
@@ -51,7 +51,7 @@ const Cart = ({ cart, moveToBought }) => (
 const TotalCost = ({ boughtItems, setCosts, costs }) => {
   const total = Object.values(costs).reduce((sum, cost) => sum + (cost || 0), 0);
   return (
-    <div className="screen">
+    <div className="screen full-screen">
       <h2>Total Cost</h2>
       <div>
         {boughtItems.map((item, index) => (
@@ -71,11 +71,24 @@ const TotalCost = ({ boughtItems, setCosts, costs }) => {
 };
 
 const App = () => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+  
   const [boughtItems, setBoughtItems] = useState([]);
   const [costs, setCosts] = useState({});
 
-  const addItem = (item) => setCart([...cart, item]);
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const addItem = (item) => {
+    if (!cart.includes(item)) {
+      setCart([...cart, item]);
+    }
+  };
+
   const moveToBought = (item) => {
     setBoughtItems([...boughtItems, item]);
     setCart(cart.filter((i) => i !== item));
@@ -83,7 +96,7 @@ const App = () => {
 
   return (
     <Router>
-      <div className="app-container">
+      <div className="app-container full-screen">
         <Routes>
           <Route path="/" element={<GrocerySelection addItem={addItem} />} />
           <Route path="/cart" element={<Cart cart={cart} moveToBought={moveToBought} />} />
